@@ -53,6 +53,11 @@ app.get("/", (req, res) => {
 const authRoutes = require("./routes/auth");
 app.use(authRoutes);
 
+// Group route
+const groupRoutes = require("./routes/groups");
+app.use(groupRoutes);
+
+
 
 // Error handler for CSRF errors
 app.use((err, req, res, next) => {

@@ -1,0 +1,20 @@
+<h1><%= group.name %></h1>
+
+<h3>Members:</h3>
+<ul>
+  <% members.forEach(m => { %>
+    <li><%= m.username %></li>
+  <% }) %>
+</ul>
+
+<% if (currentUser.id === group.ownerId) { %>
+  <h3>Add Member</h3>
+  <form action="/groups/<%= group.id %>/add-member" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label>Username:</label>
+    <input type="text" name="username">
+
+    <button type="submit">Add</button>
+  </form>
+<% } %>

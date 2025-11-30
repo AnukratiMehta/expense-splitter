@@ -1,0 +1,11 @@
+<h1>Your Groups</h1>
+
+<a href="/groups/create">Create a New Group</a>
+
+<ul>
+  <% groups.forEach(g => { %>
+    <li>
+      <a href="/groups/<%= g.id %>"><%= g.name %></a>
+    </li>
+  <% }) %>
+</ul>
