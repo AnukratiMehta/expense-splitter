@@ -23,6 +23,24 @@ db.serialize(() => {
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+    db.run(`
+    CREATE TABLE IF NOT EXISTS groups (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      ownerId INTEGER,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS group_members (
+      groupId INTEGER,
+      userId INTEGER,
+      PRIMARY KEY (groupId, userId)
+    )
+  `);
+
 });
 
 module.exports = db;
