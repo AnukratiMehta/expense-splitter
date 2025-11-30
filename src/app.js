@@ -49,6 +49,11 @@ app.get("/", (req, res) => {
   res.render("home", { title: "Expense Splitter" });
 });
 
+// Auth route
+const authRoutes = require("./routes/auth");
+app.use(authRoutes);
+
+
 // Error handler for CSRF errors
 app.use((err, req, res, next) => {
   if (err.code === "EBADCSRFTOKEN") {
