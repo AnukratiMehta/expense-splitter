@@ -57,6 +57,10 @@ app.use(authRoutes);
 const groupRoutes = require("./routes/groups");
 app.use(groupRoutes);
 
+// Expnse route
+const expenseRoutes = require("./routes/expenses");
+app.use(expenseRoutes);
+
 
 
 // Error handler for CSRF errors

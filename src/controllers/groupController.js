@@ -1,5 +1,7 @@
 const groupModel = require("../models/groupModel");
 const userModel = require("../models/userModel");
+const expenseModel = require("../models/expenseModel");
+
 
 module.exports = {
   async listGroups(req, res) {
@@ -37,8 +39,10 @@ module.exports = {
 
     const group = await groupModel.findById(groupId);
     const members = await groupModel.listMembers(groupId);
+    const expenses = await expenseModel.listByGroup(groupId);
 
-    res.render("groups/view", { group, members });
+
+res.render("groups/view", { group, members, expenses });
   },
 
   async addMember(req, res) {

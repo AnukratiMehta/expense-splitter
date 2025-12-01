@@ -18,3 +18,36 @@
     <button type="submit">Add</button>
   </form>
 <% } %>
+
+<h3>Add Expense</h3>
+
+<form action="/groups/<%= group.id %>/expenses/add" method="POST">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>Description:</label>
+  <input type="text" name="description" required>
+
+  <label>Amount (€):</label>
+  <input type="number" step="0.01" name="amount" required>
+
+  <button type="submit">Add</button>
+</form>
+
+<h3>Expenses</h3>
+
+<ul>
+  <% expenses.forEach(e => { %>
+    <li>
+      <strong><%= e.description %></strong> — €<%= e.amount %>
+      (paid by <%= e.paidByName %>)
+
+      <a href="/groups/<%= group.id %>/expenses/<%= e.id %>/edit">Edit</a>
+
+      <form action="/groups/<%= group.id %>/expenses/<%= e.id %>/delete" method="POST" style="display:inline;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit">Delete</button>
+      </form>
+    </li>
+  <% }) %>
+</ul>
+
