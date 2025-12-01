@@ -41,6 +41,18 @@ db.serialize(() => {
     )
   `);
 
+    db.run(`
+    CREATE TABLE IF NOT EXISTS expenses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      groupId INTEGER,
+      description TEXT,
+      amount REAL,
+      paidBy INTEGER,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+
 });
 
 module.exports = db;
