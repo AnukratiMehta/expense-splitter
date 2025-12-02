@@ -1,19 +1,20 @@
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
-// Location of the database file
 const dbPath = path.join(__dirname, "..", "..", "data.db");
+
+console.log("USING DATABASE FILE:", dbPath);
 
 // Open connection
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error("Failed to connect to DB", err);
   } else {
-    console.log("Connected to SQLite database");
+    console.log("Connected to SQLite database at:", dbPath);
   }
 });
 
-// Create tables if they don't exist
+// Create tables
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
@@ -24,7 +25,7 @@ db.serialize(() => {
     )
   `);
 
-    db.run(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS groups (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
@@ -41,7 +42,7 @@ db.serialize(() => {
     )
   `);
 
-    db.run(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS expenses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       groupId INTEGER,
@@ -52,7 +53,15 @@ db.serialize(() => {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS expense_splits (
+      expenseId INTEGER,
+      userId INTEGER,
+      amount REAL,
+      PRIMARY KEY (expenseId, userId)
+    )
+  `);
 
 });
 
-module.exports = db;
+module.exports = db; 

@@ -3,11 +3,14 @@ const router = express.Router();
 const { requireLogin } = require("../middleware/authMiddleware");
 const expenseController = require("../controllers/expenseController");
 
-router.post("/groups/:id/expenses/add", requireLogin, expenseController.addExpense);
+// Add expense
+router.post("/:id/expenses/add", requireLogin, expenseController.addExpense);
 
-router.get("/groups/:groupId/expenses/:expenseId/edit", requireLogin, expenseController.showEditExpense);
-router.post("/groups/:groupId/expenses/:expenseId/edit", requireLogin, expenseController.editExpense);
+// Edit expense
+router.get("/:groupId/expenses/:expenseId/edit", requireLogin, expenseController.showEditExpense);
+router.post("/:groupId/expenses/:expenseId/edit", requireLogin, expenseController.editExpense);
 
-router.post("/groups/:groupId/expenses/:expenseId/delete", requireLogin, expenseController.deleteExpense);
+// Delete expense
+router.post("/:groupId/expenses/:expenseId/delete", requireLogin, expenseController.deleteExpense);
 
 module.exports = router;

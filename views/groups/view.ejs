@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= group.name %></title>
+</head>
+<body>
+
 <h1><%= group.name %></h1>
 
 <h3>Members:</h3>
@@ -13,11 +21,13 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
     <label>Username:</label>
-    <input type="text" name="username">
+    <input type="text" name="username" required>
 
     <button type="submit">Add</button>
   </form>
 <% } %>
+
+<hr>
 
 <h3>Add Expense</h3>
 
@@ -27,11 +37,31 @@
   <label>Description:</label>
   <input type="text" name="description" required>
 
-  <label>Amount (€):</label>
+  <br><br>
+
+  <label>Total Amount (€):</label>
   <input type="number" step="0.01" name="amount" required>
 
-  <button type="submit">Add</button>
+  <h4>Split Between Members</h4>
+
+  <% members.forEach(m => { %>
+    <div>
+      <label><%= m.username %>:</label>
+      <input 
+        type="number"
+        step="0.01"
+        name="splits[<%= m.id %>]"
+        required
+        value="0"
+      >
+    </div>
+  <% }) %>
+
+  <br>
+  <button type="submit">Add Expense</button>
 </form>
+
+<hr>
 
 <h3>Expenses</h3>
 
@@ -41,9 +71,15 @@
       <strong><%= e.description %></strong> — €<%= e.amount %>
       (paid by <%= e.paidByName %>)
 
+      <!-- Edit -->
       <a href="/groups/<%= group.id %>/expenses/<%= e.id %>/edit">Edit</a>
 
-      <form action="/groups/<%= group.id %>/expenses/<%= e.id %>/delete" method="POST" style="display:inline;">
+      <!-- Delete -->
+      <form
+        action="/groups/<%= group.id %>/expenses/<%= e.id %>/delete"
+        method="POST"
+        style="display:inline;"
+      >
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button type="submit">Delete</button>
       </form>
@@ -51,3 +87,45 @@
   <% }) %>
 </ul>
 
+<hr>
+
+<h3>Balances</h3>
+
+<ul>
+  <% members.forEach(m => { 
+       const bal = balances[m.id];
+  %>
+    <li>
+      <strong><%= m.username %></strong>:
+      <% if (bal > 0) { %>
+        should receive €<%= bal.toFixed(2) %>
+      <% } else if (bal < 0) { %>
+        owes €<%= Math.abs(bal).toFixed(2) %>
+      <% } else { %>
+        is settled up
+      <% } %>
+    </li>
+  <% }) %>
+</ul>
+
+<hr>
+
+<h3>Suggested Settlements</h3>
+
+<% if (settlements.length === 0) { %>
+  <p>Everyone is settled up.</p>
+<% } else { %>
+  <ul>
+    <% settlements.forEach(s => { %>
+      <li>
+        <strong><%= userMap[s.fromUserId] %></strong>
+        should pay
+        <strong><%= userMap[s.toUserId] %></strong>
+        €<%= s.amount.toFixed(2) %>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+
+</body>
+</html>

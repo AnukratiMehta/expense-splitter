@@ -4,37 +4,51 @@ const userModel = require("../models/userModel");
 module.exports = {
 
   showRegister(req, res) {
-    // Always pass error, even if null
     res.render("auth/register", { error: null });
   },
 
-  async register(req, res) {
-    const { username, password } = req.body;
+async register(req, res) {
+  let { username, password } = req.body;
 
-    // Basic validation
-    if (!username || !password) {
-      return res.render("auth/register", { error: "All fields required." });
+  username = username.trim();
+
+  if (!username || !password) {
+    return res.render("auth/register", { error: "All fields are required." });
+  }
+
+  if (username.length < 3) {
+    return res.render("auth/register", { error: "Username must be at least 3 characters." });
+  }
+
+  if (password.length < 6) {
+    return res.render("auth/register", { error: "Password must be at least 6 characters long." });
+  }
+
+  try {
+    const existing = await userModel.findByUsername(username);
+    if (existing) {
+      return res.render("auth/register", { error: "Username already exists." });
     }
 
-    if (password.length < 6) {
-      return res.render("auth/register", { error: "Password too short." });
+    const passwordHash = await bcrypt.hash(password, 10);
+    await userModel.createUser(username, passwordHash);
+
+    return res.redirect("/login");
+
+  } catch (err) {
+    console.error("REGISTRATION ERROR:", err);
+
+    if (err.message.includes("UNIQUE") || err.code === "SQLITE_CONSTRAINT") {
+      return res.render("auth/register", {
+        error: "This username already exists. Try a different one."
+      });
     }
 
-    try {
-      const existing = await userModel.findByUsername(username);
-      if (existing) {
-        return res.render("auth/register", { error: "Username already taken." });
-      }
-
-      const passwordHash = await bcrypt.hash(password, 10);
-      await userModel.createUser(username, passwordHash);
-
-      res.redirect("/login");
-    } catch (err) {
-      console.error(err);
-      res.render("auth/register", { error: "Error creating account." });
-    }
-  },
+    return res.render("auth/register", {
+      error: "Registration failed: " + err.message
+    });
+  }
+},
 
   showLogin(req, res) {
   res.render("auth/login", { error: null });
@@ -64,7 +78,7 @@ async login(req, res) {
       username: user.username,
     };
 
-    res.redirect("/"); // home will now show "logged in as"
+    res.redirect("/");
   } catch (err) {
     console.error(err);
     res.render("auth/login", { error: "Login error. Try again." });

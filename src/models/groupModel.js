@@ -2,14 +2,26 @@ const db = require("./db");
 
 module.exports = {
   createGroup(name, ownerId) {
-    return new Promise((resolve, reject) => {
-      const sql = `INSERT INTO groups (name, ownerId) VALUES (?, ?)`;
-      db.run(sql, [name, ownerId], function (err) {
-        if (err) return reject(err);
-        resolve({ id: this.lastID });
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO groups (name, ownerId) VALUES (?, ?)`;
+
+    db.run(sql, [name, ownerId], function (err) {
+      if (err) return reject(err);
+
+      const groupId = this.lastID;
+
+      const addOwnerSql = `
+        INSERT INTO group_members (groupId, userId)
+        VALUES (?, ?)
+      `;
+
+      db.run(addOwnerSql, [groupId, ownerId], (err2) => {
+        if (err2) return reject(err2);
+        resolve({ id: groupId });
       });
     });
-  },
+  });
+},
 
   addMember(groupId, userId) {
     return new Promise((resolve, reject) => {
