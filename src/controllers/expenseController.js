@@ -68,9 +68,16 @@ module.exports = {
     splitEntries.push({ memberId: m.id, amount: parsedAmount });
   }
 
-  if (Math.abs(totalSplit - totalAmount) > 0.001) {
-    return res.status(400).send("Split amounts must sum to total amount.");
-  }
+  if (totalSplit > totalAmount + 0.001) {
+  req.session.error = "Total split cannot be greater than the total amount.";
+  return res.redirect(`/groups/${groupId}`);
+}
+
+if (Math.abs(totalSplit - totalAmount) > 0.001) {
+  req.session.error = "Split amounts must sum exactly to the total amount.";
+  return res.redirect(`/groups/${groupId}`);
+}
+
 
   const expense = await expenseModel.addExpense(
     groupId,
@@ -161,9 +168,16 @@ async editExpense(req, res) {
     splitEntries.push({ memberId: m.id, amount: parsed });
   }
 
-  if (Math.abs(totalSplit - totalAmount) > 0.001) {
-    return res.status(400).send("Split amounts must sum to total amount.");
-  }
+ if (totalSplit > totalAmount + 0.001) {
+  req.session.error = "Total split cannot be greater than the total amount.";
+  return res.redirect(`/groups/${groupId}/expenses/${expenseId}/edit`);
+}
+
+if (Math.abs(totalSplit - totalAmount) > 0.001) {
+  req.session.error = "Split amounts must sum exactly to the total amount.";
+  return res.redirect(`/groups/${groupId}/expenses/${expenseId}/edit`);
+}
+
 
   await expenseModel.updateExpense(
     expenseId,
