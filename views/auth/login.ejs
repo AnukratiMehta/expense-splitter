@@ -17,6 +17,18 @@
 </div>
 
 <div class="container">
+  <% if (success) { %>
+  <div class="notice" style="background:#d8f8d8; border:1px solid #a6e8a6; margin-bottom:1rem;">
+    <strong><%= success %></strong>
+  </div>
+<% } %>
+
+<% if (error) { %>
+  <div class="notice" style="background:#ffd3d3; border:1px solid #ff9e9e; margin-bottom:1rem;">
+    <strong><%= error %></strong>
+  </div>
+<% } %>
+
 
   <h1>Login</h1>
 

@@ -111,12 +111,8 @@ async editExpense(req, res) {
 
   const members = await groupModel.listMembers(groupId);
 
-  // --------------------------
-  // NORMALIZE SPLITS (same logic as addExpense)
-  // --------------------------
   let splitsObj = {};
 
-  // CASE 1 — Express parsed splits into an ARRAY (splits[])
   if (Array.isArray(req.body.splits)) {
     console.log("EDIT: Detected ARRAY form of splits");
     members.forEach((m, index) => {
@@ -124,13 +120,11 @@ async editExpense(req, res) {
     });
   }
 
-  // CASE 2 — Parsed correctly as object
   else if (req.body.splits && typeof req.body.splits === "object") {
     console.log("EDIT: Detected OBJECT form of splits");
     splitsObj = req.body.splits;
   }
 
-  // CASE 3 — Flattened fields (splits[1], splits[2], etc)
   else {
     console.log("EDIT: Detected FLATTENED form of splits");
     for (const [key, value] of Object.entries(req.body)) {
@@ -143,17 +137,10 @@ async editExpense(req, res) {
 
   console.log("EDIT: NORMALIZED SPLITS:", splitsObj);
 
-  // --------------------------
-  // VALIDATE AMOUNT
-  // --------------------------
   const totalAmount = parseFloat(amount);
   if (!description || isNaN(totalAmount) || totalAmount <= 0) {
     return res.status(400).send("Invalid description or amount.");
   }
-
-  // --------------------------
-  // VALIDATE PER-MEMBER SPLITS
-  // --------------------------
   let totalSplit = 0;
   const splitEntries = [];
 
@@ -178,9 +165,6 @@ async editExpense(req, res) {
     return res.status(400).send("Split amounts must sum to total amount.");
   }
 
-  // --------------------------
-  // UPDATE EXPENSE + SPLITS
-  // --------------------------
   await expenseModel.updateExpense(
     expenseId,
     description.trim(),
@@ -193,7 +177,8 @@ async editExpense(req, res) {
     await expenseModel.addSplit(expenseId, entry.memberId, entry.amount);
   }
 
-  res.redirect(`/groups/${groupId}`);
+req.session.success = "Expense updated successfully!";
+res.redirect(`/groups/${groupId}`);
 },
 
 
@@ -203,7 +188,8 @@ async editExpense(req, res) {
     await expenseModel.deleteSplits(expenseId);
     await expenseModel.deleteExpense(expenseId);
 
-    res.redirect(`/groups/${groupId}`);
+req.session.success = "Expense deleted.";
+res.redirect(`/groups/${groupId}`);
   }
 
 };

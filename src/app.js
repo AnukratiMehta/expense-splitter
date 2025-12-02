@@ -36,6 +36,17 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  res.locals.success = req.session.success || null;
+  res.locals.error = req.session.error || null;
+
+  req.session.success = null;
+  req.session.error = null;
+
+  next();
+});
+
+
 app.get("/", (req, res) => {
   res.render("home", { title: "Expense Splitter" });
 });
