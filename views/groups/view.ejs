@@ -1,131 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <title><%= group.name %></title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
+
 <body>
 
-<h1><%= group.name %></h1>
+<!-- NAVBAR -->
+<div class="navbar">
+  <div>
+    <a href="/">Home</a>
+    <a href="/groups">Groups</a>
+  </div>
 
-<h3>Members:</h3>
-<ul>
-  <% members.forEach(m => { %>
-    <li><%= m.username %></li>
-  <% }) %>
-</ul>
+  <div>
+    <span>Logged in as <strong><%= currentUser.username %></strong></span>
+    <form action="/logout" method="POST" style="display:inline;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="small-btn" type="submit">Logout</button>
+    </form>
+  </div>
+</div>
 
-<% if (currentUser.id === group.ownerId) { %>
-  <h3>Add Member</h3>
-  <form action="/groups/<%= group.id %>/add-member" method="POST">
+<!-- MAIN CONTAINER -->
+<div class="container">
+
+  <!-- Group Header -->
+  <h1><%= group.name %></h1>
+
+  <h3>Members</h3>
+  <ul>
+    <% members.forEach(m => { %>
+      <li><%= m.username %></li>
+    <% }) %>
+  </ul>
+
+  <% if (currentUser.id === group.ownerId) { %>
+    <h3>Add Member</h3>
+
+    <form action="/groups/<%= group.id %>/add-member" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Enter username..." required>
+
+      <button type="submit">Add Member</button>
+    </form>
+  <% } %>
+
+  <hr style="margin: 2rem 0;">
+
+  <!-- Add Expense -->
+  <h3>Add Expense</h3>
+
+  <form action="/groups/<%= group.id %>/expenses/add" method="POST">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-    <label>Username:</label>
-    <input type="text" name="username" required>
+    <label>Description</label>
+    <input type="text" name="description" required placeholder="e.g. Groceries, Taxi, Dinner">
 
-    <button type="submit">Add</button>
+    <label>Total Amount (€)</label>
+    <input type="number" step="0.01" name="amount" required placeholder="0.00">
+
+    <h4>Split Between Members</h4>
+
+    <% members.forEach(m => { %>
+      <div style="margin-bottom: 0.5rem;">
+        <label><%= m.username %></label>
+        <input 
+          type="number"
+          step="0.01"
+          name="splits[<%= m.id %>]"
+          value="0"
+          required
+        >
+      </div>
+    <% }) %>
+
+    <button type="submit" style="margin-top: 1rem;">Add Expense</button>
   </form>
-<% } %>
 
-<hr>
+  <hr style="margin: 2rem 0;">
 
-<h3>Add Expense</h3>
+  <!-- Expenses List -->
+  <h3>Expenses</h3>
 
-<form action="/groups/<%= group.id %>/expenses/add" method="POST">
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (expenses.length === 0) { %>
+    <p class="notice">No expenses added yet.</p>
+  <% } else { %>
+    <ul>
+      <% expenses.forEach(e => { %>
+        <li>
+          <div class="expense-item">
+            <span>
+              <strong><%= e.description %></strong> — €<%= e.amount %>  
+              (paid by <%= e.paidByName %>)
+            </span>
 
-  <label>Description:</label>
-  <input type="text" name="description" required>
+            <span>
+              <a href="/groups/<%= group.id %>/expenses/<%= e.id %>/edit">Edit</a>
 
-  <br><br>
+              <form action="/groups/<%= group.id %>/expenses/<%= e.id %>/delete"
+                    method="POST"
+                    style="display:inline;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="small-btn" type="submit">Delete</button>
+              </form>
+            </span>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
 
-  <label>Total Amount (€):</label>
-  <input type="number" step="0.01" name="amount" required>
+  <hr style="margin: 2rem 0;">
 
-  <h4>Split Between Members</h4>
+  <!-- Balances -->
+  <h3>Balances</h3>
 
-  <% members.forEach(m => { %>
-    <div>
-      <label><%= m.username %>:</label>
-      <input 
-        type="number"
-        step="0.01"
-        name="splits[<%= m.id %>]"
-        required
-        value="0"
-      >
-    </div>
-  <% }) %>
-
-  <br>
-  <button type="submit">Add Expense</button>
-</form>
-
-<hr>
-
-<h3>Expenses</h3>
-
-<ul>
-  <% expenses.forEach(e => { %>
-    <li>
-      <strong><%= e.description %></strong> — €<%= e.amount %>
-      (paid by <%= e.paidByName %>)
-
-      <!-- Edit -->
-      <a href="/groups/<%= group.id %>/expenses/<%= e.id %>/edit">Edit</a>
-
-      <!-- Delete -->
-      <form
-        action="/groups/<%= group.id %>/expenses/<%= e.id %>/delete"
-        method="POST"
-        style="display:inline;"
-      >
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button type="submit">Delete</button>
-      </form>
-    </li>
-  <% }) %>
-</ul>
-
-<hr>
-
-<h3>Balances</h3>
-
-<ul>
-  <% members.forEach(m => { 
-       const bal = balances[m.id];
-  %>
-    <li>
-      <strong><%= m.username %></strong>:
-      <% if (bal > 0) { %>
-        should receive €<%= bal.toFixed(2) %>
-      <% } else if (bal < 0) { %>
-        owes €<%= Math.abs(bal).toFixed(2) %>
-      <% } else { %>
-        is settled up
-      <% } %>
-    </li>
-  <% }) %>
-</ul>
-
-<hr>
-
-<h3>Suggested Settlements</h3>
-
-<% if (settlements.length === 0) { %>
-  <p>Everyone is settled up.</p>
-<% } else { %>
   <ul>
-    <% settlements.forEach(s => { %>
+    <% members.forEach(m => { 
+         const bal = balances[m.id];
+    %>
       <li>
-        <strong><%= userMap[s.fromUserId] %></strong>
-        should pay
-        <strong><%= userMap[s.toUserId] %></strong>
-        €<%= s.amount.toFixed(2) %>
+        <strong><%= m.username %></strong>:
+        <% if (bal > 0) { %>
+          should receive €<%= bal.toFixed(2) %>
+        <% } else if (bal < 0) { %>
+          owes €<%= Math.abs(bal).toFixed(2) %>
+        <% } else { %>
+          is settled up
+        <% } %>
       </li>
     <% }) %>
   </ul>
-<% } %>
+
+  <hr style="margin: 2rem 0;">
+
+  <!-- Suggested Settlements -->
+  <h3>Suggested Settlements</h3>
+
+  <% if (settlements.length === 0) { %>
+    <p class="notice">Everyone is settled up.</p>
+  <% } else { %>
+    <ul>
+      <% settlements.forEach(s => { %>
+        <li>
+          <strong><%= userMap[s.fromUserId] %></strong>
+          should pay
+          <strong><%= userMap[s.toUserId] %></strong>
+          €<%= s.amount.toFixed(2) %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+</div>
 
 </body>
 </html>

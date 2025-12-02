@@ -1,31 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+  <link rel="stylesheet" href="/css/styles.css">
   <meta charset="UTF-8">
-  <title><%= title %></title>
+  <title>Expense Splitter</title>
 </head>
 <body>
-  <h1><%= title %></h1>
 
-  <% if (currentUser) { %>
-    <p>Logged in as <strong><%= currentUser.username %></strong></p>
+<div class="navbar">
+  <div>
+    <a href="/">Home</a>
+    <% if (currentUser) { %><a href="/groups">Groups</a><% } %>
+  </div>
 
-    <p>
-      <a href="/groups">View Your Groups</a>
+  <div>
+    <% if (currentUser) { %>
+      <span>Logged in as <strong><%= currentUser.username %></strong></span>
+      <form action="/logout" method="POST" style="display:inline;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="small-btn" type="submit">Logout</button>
+      </form>
+    <% } else { %>
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+    <% } %>
+  </div>
+</div>
+
+<div class="container">
+  <h1>Welcome to Expense Splitter</h1>
+
+  <% if (!currentUser) { %>
+
+    <p class="notice">
+      Easily create groups, add shared expenses, and settle amounts securely.
     </p>
 
-    <form action="/logout" method="POST">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <button type="submit">Logout</button>
-    </form>
+    <div style="margin-top: 1.5rem;">
+      <a href="/login"><button>Login</button></a>
+      <a href="/register" style="margin-left: 0.5rem;"><button>Register</button></a>
+    </div>
 
   <% } else { %>
-    <p>You are not logged in yet.</p>
-    <p>
-      <a href="/login">Login</a> |
-      <a href="/register">Register</a>
+
+    <p class="notice">
+      Hello <strong><%= currentUser.username %></strong>!  
+      You're all set — continue with your groups below:
     </p>
+
+    <div style="margin-top: 1.5rem;">
+      <a href="/groups"><button>View Your Groups</button></a>
+    </div>
+
   <% } %>
+</div>
+
 
 </body>
 </html>

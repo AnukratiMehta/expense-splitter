@@ -1,31 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Register</title>
+  <meta charset="UTF-8">
+  <title>Create Account</title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
+
 <body>
 
-<h1>Create Account</h1>
+<!-- NAVBAR -->
+<div class="navbar">
+  <div><a href="/">Home</a></div>
+  <div><a href="/login">Login</a></div>
+</div>
 
-<% if (error) { %>
-  <p style="color:red;"><%= error %></p>
-<% } %>
+<div class="container">
 
-<form action="/register" method="POST">
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <h1>Create Account</h1>
 
-  <label>Username:</label>
-  <input type="text" name="username">
+  <% if (error) { %>
+    <p class="error"><%= error %></p>
+  <% } %>
 
-  <br><br>
+  <form action="/register" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-  <label>Password:</label>
-  <input type="password" name="password">
+    <label>Username</label>
+    <input type="text" name="username" placeholder="Choose a username" required>
 
-  <br><br>
+    <label>Password</label>
+    <input type="password" name="password" placeholder="Choose a password" required>
 
-  <button type="submit">Register</button>
-</form>
+    <button type="submit">Register</button>
+  </form>
+
+  <p style="margin-top: 1rem;">
+    Already have an account? <a href="/login">Login</a>.
+  </p>
+
+</div>
 
 </body>
 </html>

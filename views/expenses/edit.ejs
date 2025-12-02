@@ -1,13 +1,77 @@
-<h1>Edit Expense</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Expense</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
 
-<form action="/groups/<%= group.id %>/expenses/<%= expense.id %>/edit" method="POST">
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+<body>
 
-  <label>Description:</label>
-  <input type="text" name="description" value="<%= expense.description %>">
+<!-- NAVBAR -->
+<div class="navbar">
+  <div>
+    <a href="/">Home</a>
+    <a href="/groups">Groups</a>
+  </div>
 
-  <label>Amount (€):</label>
-  <input type="number" step="0.01" name="amount" value="<%= expense.amount %>">
+  <div>
+    <span>Logged in as <strong><%= currentUser.username %></strong></span>
+    <form action="/logout" method="POST" style="display:inline;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="small-btn" type="submit">Logout</button>
+    </form>
+  </div>
+</div>
 
-  <button type="submit">Save Changes</button>
-</form>
+<div class="container">
+
+  <h1>Edit Expense</h1>
+
+  <form action="/groups/<%= groupId %>/expenses/<%= expense.id %>/edit" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label>Description</label>
+    <input
+      type="text"
+      name="description"
+      value="<%= expense.description %>"
+      required
+    >
+
+    <label>Total Amount (€)</label>
+    <input
+      type="number"
+      step="0.01"
+      name="amount"
+      value="<%= expense.amount %>"
+      required
+    >
+
+    <h3>Split Between Members</h3>
+
+    <% members.forEach(m => { %>
+      <div style="margin-bottom: 0.5rem;">
+        <label><%= m.username %></label>
+
+        <input
+          type="number"
+          step="0.01"
+          name="splits[<%= m.id %>]"
+          value="<%= splitMap[m.id] || 0 %>"
+          required
+        >
+      </div>
+    <% }) %>
+
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <p style="margin-top: 1rem;">
+    <a href="/groups/<%= groupId %>">← Back to Group</a>
+  </p>
+
+</div>
+
+</body>
+</html>

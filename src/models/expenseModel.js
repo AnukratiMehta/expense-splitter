@@ -30,6 +30,11 @@ module.exports = {
     });
   },
 
+  // Alias for consistency with controller naming
+  getExpense(id) {
+    return this.findById(id);
+  },
+
   findById(id) {
     return new Promise((resolve, reject) => {
       const sql = `SELECT * FROM expenses WHERE id = ?`;
@@ -64,47 +69,60 @@ module.exports = {
     });
   },
 
-addSplit(expenseId, userId, amount) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      INSERT INTO expense_splits (expenseId, userId, amount)
-      VALUES (?, ?, ?)
-    `;
-    db.run(sql, [expenseId, userId, amount], (err) => {
-      if (err) return reject(err);
-      resolve();
+  addSplit(expenseId, userId, amount) {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        INSERT INTO expense_splits (expenseId, userId, amount)
+        VALUES (?, ?, ?)
+      `;
+      db.run(sql, [expenseId, userId, amount], (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
     });
-  });
-},
+  },
 
-getSplitsByExpense(expenseId) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      SELECT * FROM expense_splits
-      WHERE expenseId = ?
-    `;
-    db.all(sql, [expenseId], (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
+  // Controller calls getSplits(expenseId)
+  getSplits(expenseId) {
+    return this.getSplitsByExpense(expenseId);
+  },
+
+  getSplitsByExpense(expenseId) {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT * FROM expense_splits
+        WHERE expenseId = ?
+      `;
+      db.all(sql, [expenseId], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
     });
-  });
-},
+  },
 
-getSplitsByGroup(groupId) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      SELECT es.expenseId, es.userId, es.amount
-      FROM expense_splits es
-      JOIN expenses e ON es.expenseId = e.id
-      WHERE e.groupId = ?
-    `;
-    db.all(sql, [groupId], (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
+  // DELETE splits before deleting expense
+  deleteSplits(expenseId) {
+    return new Promise((resolve, reject) => {
+      const sql = `DELETE FROM expense_splits WHERE expenseId = ?`;
+      db.run(sql, [expenseId], (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
     });
-  });
-},
+  },
 
-
-  
+  getSplitsByGroup(groupId) {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT es.expenseId, es.userId, es.amount
+        FROM expense_splits es
+        JOIN expenses e ON es.expenseId = e.id
+        WHERE e.groupId = ?
+      `;
+      db.all(sql, [groupId], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
+  }
 };

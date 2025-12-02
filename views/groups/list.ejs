@@ -1,11 +1,63 @@
-<h1>Your Groups</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Your Groups</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
 
-<a href="/groups/create">Create a New Group</a>
+<body>
 
-<ul>
-  <% groups.forEach(g => { %>
-    <li>
-      <a href="/groups/<%= g.id %>"><%= g.name %></a>
-    </li>
-  <% }) %>
-</ul>
+<!-- NAVBAR -->
+<div class="navbar">
+  <div>
+    <a href="/">Home</a>
+    <a href="/groups">Groups</a>
+  </div>
+
+  <div>
+    <span>Logged in as <strong><%= currentUser.username %></strong></span>
+    <form action="/logout" method="POST" style="display:inline;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="small-btn" type="submit">Logout</button>
+    </form>
+  </div>
+</div>
+
+<!-- MAIN CONTAINER -->
+<div class="container">
+
+  <h1>Your Groups</h1>
+
+  <% if (groups.length === 0) { %>
+    <p class="notice">You haven't created or joined any groups yet.</p>
+
+    <div style="margin-top: 1.5rem;">
+      <a href="/groups/create"><button>Create Your First Group</button></a>
+    </div>
+
+  <% } else { %>
+
+    <p class="notice">Select a group to view expenses and balances.</p>
+
+    <ul style="margin-top: 1.5rem;">
+      <% groups.forEach(g => { %>
+        <li>
+          <div class="expense-item">
+            <span><strong><%= g.name %></strong></span>
+            <a href="/groups/<%= g.id %>">Open</a>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+
+    <div style="margin-top: 2rem;">
+      <a href="/groups/create"><button>+ Create New Group</button></a>
+    </div>
+
+  <% } %>
+
+</div>
+
+</body>
+</html>

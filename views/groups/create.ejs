@@ -1,14 +1,52 @@
-<h1>Create Group</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Create Group</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
 
-<% if (error) { %>
-  <p style="color:red;"><%= error %></p>
-<% } %>
+<body>
 
-<form action="/groups/create" method="POST">
-  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+<!-- NAVBAR -->
+<div class="navbar">
+  <div>
+    <a href="/">Home</a>
+    <a href="/groups">Groups</a>
+  </div>
 
-  <label>Group Name:</label>
-  <input type="text" name="name">
+  <div>
+    <span>Logged in as <strong><%= currentUser.username %></strong></span>
+    <form action="/logout" method="POST" style="display:inline;">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="small-btn" type="submit">Logout</button>
+    </form>
+  </div>
+</div>
 
-  <button type="submit">Create</button>
-</form>
+<!-- MAIN CONTAINER -->
+<div class="container">
+
+  <h1>Create a New Group</h1>
+
+  <% if (error) { %>
+    <p class="error"><%= error %></p>
+  <% } %>
+
+  <form action="/groups/create" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label>Group Name</label>
+    <input type="text" name="name" placeholder="E.g. Trip to Galway" required>
+
+    <button type="submit">Create Group</button>
+  </form>
+
+  <p style="margin-top: 1rem;">
+    <a href="/groups">← Back to Your Groups</a>
+  </p>
+
+</div>
+
+</body>
+</html>

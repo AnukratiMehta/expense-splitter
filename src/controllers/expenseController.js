@@ -105,65 +105,96 @@ module.exports = {
     });
   },
 
-  async editExpense(req, res) {
-    const { groupId, expenseId } = req.params;
-    const { description, amount } = req.body;
+async editExpense(req, res) {
+  const { groupId, expenseId } = req.params;
+  const { description, amount } = req.body;
 
-    const members = await groupModel.listMembers(groupId);
-    let splitsObj = {};
+  const members = await groupModel.listMembers(groupId);
 
-    if (req.body.splits) {
-      splitsObj = req.body.splits;
-    } else {
-      for (const [key, value] of Object.entries(req.body)) {
-        if (key.startsWith("splits[") && key.endsWith("]")) {
-          const idStr = key.slice(7, -1).trim();
-          if (idStr) splitsObj[idStr] = value;
-        }
+  // --------------------------
+  // NORMALIZE SPLITS (same logic as addExpense)
+  // --------------------------
+  let splitsObj = {};
+
+  // CASE 1 — Express parsed splits into an ARRAY (splits[])
+  if (Array.isArray(req.body.splits)) {
+    console.log("EDIT: Detected ARRAY form of splits");
+    members.forEach((m, index) => {
+      splitsObj[m.id] = req.body.splits[index];
+    });
+  }
+
+  // CASE 2 — Parsed correctly as object
+  else if (req.body.splits && typeof req.body.splits === "object") {
+    console.log("EDIT: Detected OBJECT form of splits");
+    splitsObj = req.body.splits;
+  }
+
+  // CASE 3 — Flattened fields (splits[1], splits[2], etc)
+  else {
+    console.log("EDIT: Detected FLATTENED form of splits");
+    for (const [key, value] of Object.entries(req.body)) {
+      if (key.startsWith("splits[") && key.endsWith("]")) {
+        const memberId = key.slice(7, -1).trim();
+        splitsObj[memberId] = value;
       }
     }
+  }
 
-    const totalAmount = parseFloat(amount);
-    if (!description || isNaN(totalAmount) || totalAmount <= 0) {
-      return res.status(400).send("Invalid description or amount.");
+  console.log("EDIT: NORMALIZED SPLITS:", splitsObj);
+
+  // --------------------------
+  // VALIDATE AMOUNT
+  // --------------------------
+  const totalAmount = parseFloat(amount);
+  if (!description || isNaN(totalAmount) || totalAmount <= 0) {
+    return res.status(400).send("Invalid description or amount.");
+  }
+
+  // --------------------------
+  // VALIDATE PER-MEMBER SPLITS
+  // --------------------------
+  let totalSplit = 0;
+  const splitEntries = [];
+
+  for (const m of members) {
+    const raw = splitsObj[m.id];
+
+    if (raw === undefined) {
+      return res.status(400).send("Missing split for member " + m.username);
     }
 
-    let totalSplit = 0;
-    const splitEntries = [];
+    const parsed = parseFloat(raw);
 
-    for (const m of members) {
-      const raw = splitsObj[m.id];
-      if (raw === undefined) {
-        return res.status(400).send("Missing split for member " + m.username);
-      }
-      const parsed = parseFloat(raw);
-      if (isNaN(parsed) || parsed < 0) {
-        return res.status(400).send("Invalid split amount for " + m.username);
-      }
-      totalSplit += parsed;
-      splitEntries.push({ memberId: m.id, amount: parsed });
+    if (isNaN(parsed) || parsed < 0) {
+      return res.status(400).send("Invalid split amount for " + m.username);
     }
 
-    if (Math.abs(totalSplit - totalAmount) > 0.001) {
-      return res
-        .status(400)
-        .send("Split amounts must sum to total amount.");
-    }
+    totalSplit += parsed;
+    splitEntries.push({ memberId: m.id, amount: parsed });
+  }
 
-    await expenseModel.updateExpense(
-      expenseId,
-      description.trim(),
-      totalAmount
-    );
+  if (Math.abs(totalSplit - totalAmount) > 0.001) {
+    return res.status(400).send("Split amounts must sum to total amount.");
+  }
 
-    await expenseModel.deleteSplits(expenseId);
+  // --------------------------
+  // UPDATE EXPENSE + SPLITS
+  // --------------------------
+  await expenseModel.updateExpense(
+    expenseId,
+    description.trim(),
+    totalAmount
+  );
 
-    for (const entry of splitEntries) {
-      await expenseModel.addSplit(expenseId, entry.memberId, entry.amount);
-    }
+  await expenseModel.deleteSplits(expenseId);
 
-    res.redirect(`/groups/${groupId}`);
-  },
+  for (const entry of splitEntries) {
+    await expenseModel.addSplit(expenseId, entry.memberId, entry.amount);
+  }
+
+  res.redirect(`/groups/${groupId}`);
+},
 
 
   async deleteExpense(req, res) {
