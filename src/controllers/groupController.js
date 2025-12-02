@@ -72,7 +72,7 @@ res.render("groups/view", {
   },
 
 
-  async addMember(req, res) {
+ async addMember(req, res) {
   const groupId = req.params.id;
   const username = req.body.username.trim();
   const userId = req.session.user.id;
@@ -91,16 +91,32 @@ res.render("groups/view", {
   // Validate user exists
   const userToAdd = await userModel.findByUsername(username);
   if (!userToAdd) {
+    // Rebuild full page context so the view works correctly
+    const members = await groupModel.listMembers(groupId);
+    const expenses = await expenseModel.listByGroup(groupId);
+    const splits = await expenseModel.getSplitsByGroup(groupId);
+
+    const { balances, paid, owes } =
+      calculateBalances(members, expenses, splits);
+
+    const settlements = calculateSettlements(members, balances);
+
+    // Map user IDs → username for settlement display
+    const userMap = {};
+    members.forEach((m) => {
+      userMap[m.id] = m.username;
+    });
+
     return res.render("groups/view", {
       group,
-      members: await groupModel.listMembers(groupId),
-      expenses: await expenseModel.listByGroup(groupId),
-      balances: {},
-      paid: {},
-      owes: {},
-      settlements: [],
-      userMap: {},
-      error: "User does not exist."
+      members,
+      expenses,
+      balances,
+      paid,
+      owes,
+      settlements,
+      userMap,
+      error: "User does not exist." // <-- YOUR FLASH MESSAGE HERE
     });
   }
 
