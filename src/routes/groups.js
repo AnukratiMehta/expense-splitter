@@ -16,4 +16,8 @@ router.get("/:id", requireLogin, groupController.viewGroup);
 // Add member
 router.post("/:id/add-member", requireLogin, groupController.addMember);
 
+// Delete member
+router.post("/:id/delete-member", requireLogin, groupController.deleteMember);
+
+
 module.exports = router;

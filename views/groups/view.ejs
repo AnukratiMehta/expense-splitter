@@ -43,11 +43,26 @@
   <h1><%= group.name %></h1>
 
   <h3>Members</h3>
-  <ul>
-    <% members.forEach(m => { %>
-      <li><%= m.username %></li>
-    <% }) %>
-  </ul>
+ <ul>
+  <% members.forEach(m => { %>
+    <li>
+      <%= m.username %>
+
+      <% if (currentUser.id === group.ownerId && m.id !== group.ownerId) { %>
+        <form action="/groups/<%= group.id %>/delete-member" 
+              method="POST" 
+              style="display:inline;">
+          
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="memberId" value="<%= m.id %>">
+
+          <button type="submit" class="small-btn danger">Remove</button>
+        </form>
+      <% } %>
+    </li>
+  <% }) %>
+</ul>
+
 
   <% if (currentUser.id === group.ownerId) { %>
     <h3>Add Member</h3>

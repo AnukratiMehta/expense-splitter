@@ -130,4 +130,38 @@ res.render("groups/view", {
 
   res.redirect(`/groups/${groupId}`);
 },
+
+async deleteMember(req, res) {
+  const groupId = req.params.id;
+  const memberId = req.body.memberId;
+  const currentUserId = req.session.user.id;
+
+  const group = await groupModel.findById(groupId);
+
+  // Only owner can delete
+  if (group.ownerId !== currentUserId) {
+    req.session.error = "Only the owner can remove members.";
+    return res.redirect(`/groups/${groupId}`);
+  }
+
+  // Owner cannot delete themselves
+  if (Number(memberId) === Number(currentUserId)) {
+    req.session.error = "You cannot remove yourself from your own group.";
+    return res.redirect(`/groups/${groupId}`);
+  }
+
+  // Ensure member actually exists
+  const isMember = await groupModel.isMember(groupId, memberId);
+  if (!isMember) {
+    req.session.error = "User is not a member of this group.";
+    return res.redirect(`/groups/${groupId}`);
+  }
+
+  // Remove from group_members
+  await groupModel.removeMember(groupId, memberId);
+
+  req.session.success = "Member removed successfully.";
+  return res.redirect(`/groups/${groupId}`);
+},
+
 };

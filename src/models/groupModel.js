@@ -84,5 +84,19 @@ module.exports = {
         resolve(rows);
       });
     });
-  }
+  },
+
+  removeMember(groupId, userId) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      DELETE FROM group_members
+      WHERE groupId = ? AND userId = ?
+    `;
+    db.run(sql, [groupId, userId], (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+},
+
 };
