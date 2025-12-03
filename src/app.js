@@ -3,6 +3,8 @@ const path = require("path");
 const session = require("express-session");
 const helmet = require("helmet");
 const csrf = require("csurf");
+const rateLimit = require("express-rate-limit");
+
 
 const app = express();
 
@@ -51,8 +53,20 @@ app.get("/", (req, res) => {
   res.render("home", { title: "Expense Splitter" });
 });
 
+// Rate limiting for login route
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000, 
+  max: 5,              // login attempts
+  message: "Too many login attempts. Please try again in a minute."
+});
+
 const authRoutes = require("./routes/auth");
+
+// Apply rate limiter ONLY to POST /login
+app.post("/login", loginLimiter);
+
 app.use(authRoutes);
+
 
 const groupRoutes = require("./routes/groups");
 app.use("/groups", groupRoutes);
