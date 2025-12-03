@@ -30,7 +30,11 @@ app.use(
 const csrfProtection = csrf();
 app.use(csrfProtection);
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP because inline EJS can break it
+  crossOriginEmbedderPolicy: false
+}));
+
 
 app.use((req, res, next) => {
   res.locals.csrfToken = req.csrfToken();
