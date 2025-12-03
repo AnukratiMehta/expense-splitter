@@ -3,6 +3,7 @@ const userModel = require("../models/userModel");
 const expenseModel = require("../models/expenseModel");
 const { calculateBalances } = require("../utils/calculateBalances");
 const { calculateSettlements } = require("../utils/calculateSettlements");
+const validator = require("validator");
 
 
 
@@ -18,7 +19,7 @@ module.exports = {
   },
 
   async createGroup(req, res) {
-    const name = req.body.name.trim();
+let name = validator.escape(req.body.name.trim());
     const userId = req.session.user.id;
 
     if (!name) {
@@ -74,7 +75,7 @@ res.render("groups/view", {
 
  async addMember(req, res) {
   const groupId = req.params.id;
-  const username = req.body.username.trim();
+const username = validator.escape(req.body.username.trim());
   const userId = req.session.user.id;
 
   // Check member access

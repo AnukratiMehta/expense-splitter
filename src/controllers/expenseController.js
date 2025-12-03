@@ -2,6 +2,7 @@ const expenseModel = require("../models/expenseModel");
 const groupModel = require("../models/groupModel");
 const { calculateBalances } = require("../utils/calculateBalances");
 const { calculateSettlements } = require("../utils/calculateSettlements");
+const validator = require("validator");
 
 module.exports = {
 
@@ -81,7 +82,7 @@ if (Math.abs(totalSplit - totalAmount) > 0.001) {
 
   const expense = await expenseModel.addExpense(
     groupId,
-    description.trim(),
+validator.escape(description.trim()),
     totalAmount,
     userId
   );

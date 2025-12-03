@@ -31,7 +31,7 @@ const csrfProtection = csrf();
 app.use(csrfProtection);
 
 app.use(helmet({
-  contentSecurityPolicy: false, // Disable CSP because inline EJS can break it
+  contentSecurityPolicy: false, // Disable CSP because inline EJS can break with it
   crossOriginEmbedderPolicy: false
 }));
 

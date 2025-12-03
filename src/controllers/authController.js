@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel");
+const validator = require("validator");
+
 
 module.exports = {
 
@@ -10,7 +12,7 @@ module.exports = {
 async register(req, res) {
   let { username, password } = req.body;
 
-  username = username.trim();
+username = validator.escape(username.trim());
 
   if (!username || !password) {
     return res.render("auth/register", { error: "All fields are required." });
@@ -55,7 +57,8 @@ async register(req, res) {
 },
 
 async login(req, res) {
-  const { username, password } = req.body;
+let { username, password } = req.body;
+username = validator.escape(username.trim());
 
   if (!username || !password) {
     return res.render("auth/login", { error: "All fields required." });
