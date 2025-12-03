@@ -27,9 +27,12 @@ let name = validator.escape(req.body.name.trim());
     }
 
     const group = await groupModel.createGroup(name, userId);
+    console.log(`[GROUP CREATED] Group: ${name}, OwnerID: ${userId}`);
+
 
     // Add creator as member
     await groupModel.addMember(group.id, userId);
+    
 
     res.redirect("/groups");
   },
@@ -128,6 +131,8 @@ const username = validator.escape(req.body.username.trim());
   }
 
   await groupModel.addMember(groupId, userToAdd.id);
+  console.log(`[MEMBER ADDED] User ${userToAdd.username} (ID: ${userToAdd.id}) added to GroupID: ${groupId} by UserID: ${userId}`);
+
 
   res.redirect(`/groups/${groupId}`);
 },
@@ -160,6 +165,8 @@ async deleteMember(req, res) {
 
   // Remove from group_members
   await groupModel.removeMember(groupId, memberId);
+  console.log(`[MEMBER REMOVED] UserID: ${memberId} removed from GroupID: ${groupId} by OwnerID: ${currentUserId}`);
+
 
   req.session.success = "Member removed successfully.";
   return res.redirect(`/groups/${groupId}`);
