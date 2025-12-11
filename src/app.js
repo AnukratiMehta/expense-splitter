@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    secret: "change-this-secret-later",
+    secret: "not-applicable",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -59,7 +59,7 @@ app.get("/", (req, res) => {
 
 // Rate limiting for login route
 const loginLimiter = rateLimit({
-  windowMs: 60 * 1000, 
+  windowMs: 60 * 1000,
   max: 5,              // login attempts
   message: "Too many login attempts. Please try again in a minute."
 });
